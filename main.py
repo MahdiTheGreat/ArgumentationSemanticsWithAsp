@@ -145,10 +145,11 @@ for node_value in node_values:
  )
  start_time=time.time()
  ctl.ground([("base", [])])
- temp=ctl.solve(on_model=lambda m: print("Answer: {}".format(m)))
+ temp=ctl.solve(on_model=lambda m: print("ASP Answer: {}".format(m)))
  asp_times.append(time.time()-start_time)
 
  start_time = time.time()
+ # commented the line below because we are using cython
  # solutions = problem.getSolutions()
  solutions = solver(problem)
  csp_times.append(time.time() - start_time)
@@ -156,8 +157,8 @@ for node_value in node_values:
      del solutions[i]['argument_graph']
      del solutions[i]['Extension']
      solutions[i] = list(dict(filter(lambda pair: pair[1], solutions[i].items())).keys())
+ print("CSP answers:")
  print(solutions)
- print(len(solutions))
 
 print("asp rsp times are"+str(asp_times))
 print("csp rsp times are "+str(csp_times))
