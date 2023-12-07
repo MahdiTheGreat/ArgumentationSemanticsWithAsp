@@ -4,14 +4,8 @@ from enum import Enum
 import random
 import time
 import matplotlib.pyplot as plt
-from csp_cython_solver import solver
 
-def random_graph_generator(node_number,edge_prob=0.7):
-    # graph = {1: [2, 4],
-    #                   2: [1],
-    #                   3: [],
-    #                   4: []
-    #                   }
+def random_graph_generator(node_number,edge_prob=0.95):
     graph={}
     for i in range(1,node_number+1):
         graph[i]=[]
@@ -105,8 +99,7 @@ defends_against(X,Y,Z):-arg(X),arg(Y),arg(Z),att(Z,Y),att(X,Z).
 
 # argument_graph ={1: [1]}
 
-# node_values=[10,20,50,100]
-node_values=[10,20]
+node_values=[1,5,10,20]
 asp_times=[]
 csp_times=[]
 
@@ -118,10 +111,6 @@ for node_value in node_values:
  ctl = Control()
  # we configure the control so that it enumerates over all the asnwers
  ctl.configuration.solve.models = 0
- # ctl.add("base", [], """\
- # p(@inc(10)).
- # q(@seq(1,2)).
- # """)
  ctl.add("base", [], generator_tester)
  instance=''
  instance+='arg('+str(arguments[0])+'..'+str(arguments[-1])+').'
@@ -134,7 +123,6 @@ for node_value in node_values:
       # the domain of variables have to be a list, even if the list has only one elemen
       instance += 'att(' + str(argument) + ',' + str(attacked_arg) + ').'
 
-
  ctl.add("base", [],instance)
 
  problem.addVariable('argument_graph', [argument_graph])
@@ -143,15 +131,10 @@ for node_value in node_values:
      extension_constraint
      , variables=[str(argument) for argument in arguments] + ['argument_graph'] + ['Extension']
  )
- start_time=time.time()
- ctl.ground([("base", [])])
- temp=ctl.solve(on_model=lambda m: print("ASP Answer: {}".format(m)))
- asp_times.append(time.time()-start_time)
 
  start_time = time.time()
  # commented the line below because we are using cython
- # solutions = problem.getSolutions()
- solutions = solver(problem)
+ solutions = problem.getSolutions()
  csp_times.append(time.time() - start_time)
  for i in range(len(solutions)):
      del solutions[i]['argument_graph']
@@ -159,6 +142,11 @@ for node_value in node_values:
      solutions[i] = list(dict(filter(lambda pair: pair[1], solutions[i].items())).keys())
  print("CSP answers:")
  print(solutions)
+
+ start_time=time.time()
+ ctl.ground([("base", [])])
+ temp=ctl.solve(on_model=lambda m: print("ASP Answer: {}".format(m)))
+ asp_times.append(time.time()-start_time)
 
 print("asp rsp times are"+str(asp_times))
 print("csp rsp times are "+str(csp_times))
@@ -169,12 +157,3 @@ plt.title("ASP vs CSP rsp time", fontsize=20)
 plt.xlabel("Arguments", fontsize=12)
 plt.ylabel("Time(seconds)", fontsize=12)
 plt.show()
-
-
-
-
-
-
-
-
-
